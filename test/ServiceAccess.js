@@ -98,6 +98,46 @@ contract('ServiceAccess', accounts => {
 
         await smc.setPublicAccess(255, false);
         assert(!(await smc.hasPermission(acc, 255)));
-    })
+    });
 
+    it('Should be able to add managers.', async() => {
+        const smc = await ServiceAccess.deployed();
+        const token = accounts[6];
+        const manager = accounts[7];
+        
+        await smc.setManager(token, manager);
+        await smc.addPermission(token, 10);
+        let set_manager = await smc.managementAllowance(token);
+        let isManager = await smc.isManager(token, manager);
+        let notManager = !(await smc.isManager(token, accounts[8]));
+        let managerAndPerm10 = await smc.hasPermissionAndIsManager(token, 10, manager);
+        let managerAndPerm9 = await smc.hasPermissionAndIsManager(token, 9, manager);
+
+        assert(set_manager == manager, "Manager was not set.");
+        assert(isManager, "Manager wasn't registered as the same!");
+        assert(notManager, "Wrong Manager");
+        assert(managerAndPerm10, "Manager didn't have permissions despite the token being given them.");
+        assert(!managerAndPerm9, "Manager shouldn't have permissions if never given.");
+    });
+
+    it('Should be able to change managers.', async() => {
+        const smc = await ServiceAccess.deployed();
+        const token = accounts[6];
+        const manager = accounts[7];
+        let set_manager = await smc.managementAllowance(token);
+
+        assert(await smc.isManager(token, manager));
+        try {
+            await smc.setManager(token, accounts[8]);
+        }
+        catch { /* this should be caught */ }
+        set_manager = await smc.managementAllowance(token);
+
+        let is8 = await smc.isManager(token, accounts[8]);
+        assert(!is8, "Owner should not be able to set manager after manager was set.");
+
+        await smc.setManager(token, accounts[8], {from: set_manager});
+        is8 = await smc.isManager(token, accounts[8]);
+        assert(is8, "Manager could not be reset.");
+    });
 })
