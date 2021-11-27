@@ -18,8 +18,24 @@ contract PermissionedContract is Ownable {
         _;
     }
 
-    modifier specPermissioned(uint8 _permission, address user) {
+    modifier managerPermissioned(address user, address manager) {
+        require(
+            serviceAccess.hasPermissionAndIsManager(user, permission, manager), 
+            "UpsilonX: Permission not granted."
+        );
+        _;
+    }
+
+    modifier specPermissioned(address user, uint8 _permission) {
         require(serviceAccess.hasPermission(user, _permission), "UpsilonX: Permission not granted.");
+        _;
+    }
+
+    modifier specManagerPermissioned(address user, uint8 _permission, address manager) {
+        require(
+            serviceAccess.hasPermissionAndIsManager(user, _permission, manager), 
+            "UpsilonX: Permission not granted."
+        );
         _;
     }
 
