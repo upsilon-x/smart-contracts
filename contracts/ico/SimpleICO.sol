@@ -9,13 +9,13 @@ contract SimpleICO is PermissionedContract {
     constructor(address _feeTo, uint16 _fee, ServiceAccess _access)
         PermissionedContract(_access) 
     {
-        feeTo = _feeTo;
+        feeTo = payable(_feeTo);
         fee = _fee;
         permission = 2;
     }
 
-    address public feeTo;
-    uint16 public fee; // 300 = 0.3%
+    address payable public feeTo;
+    uint16 public fee = 300; // 300 = 0.3%
     uint public feesCollected;
 
     struct SimpleOffering {
@@ -32,6 +32,16 @@ contract SimpleICO is PermissionedContract {
     mapping(uint => uint) offeringPayments;
     mapping(uint => uint) tokensSold;
 
+    modifier icoExists(uint icoId) {
+        require(nextOfferingId > icoId, "UpsilonX: ICO must exist.");
+        _;
+    }
+
+    modifier icoOpen(uint icoId) {
+        require(isICOOpen(icoId), "UpsilonX: ICO must be open.");
+        _;
+    }
+
     // start ico
     function createICO(IERC20 token, uint icoStartTime, uint icoEndTime, uint tokenRate, uint tokensToSell) 
         external managerPermissioned(address(token), msg.sender) 
@@ -46,8 +56,10 @@ contract SimpleICO is PermissionedContract {
     }
 
     // purchase ico
-    function purchaseICO(uint icoId) payable external {
-        require(isICOOpen(icoId), "UpsilonX: ICO must be open.");
+    function purchaseICO(uint icoId) payable external 
+        icoExists(icoId) 
+        icoOpen(icoId) 
+    {
 
         uint paid = msg.value;
         uint tokenOwned = offerings[icoId].tokenAddress.balanceOf(address(this));
@@ -76,7 +88,15 @@ contract SimpleICO is PermissionedContract {
     }
 
     // withdraw ico payments
-    
+    function withdrawICO(uint icoId) external 
+        icoExists(icoId) 
+        managerPermissioned(address(offerings[icoId].tokenAddress), msg.sender)
+    {
+        require(block.timestamp > offerings[icoId].icoEndTime, "ICO not over.");
+        uint payment = offeringPayments[icoId];
+        offeringPayments[icoId] = 0;
+        payable(offerings[icoId].owner).transfer(payment);
+    }
 
     // check if ico is open
     function isICOOpen(uint icoId) public view returns(bool) {
@@ -86,9 +106,18 @@ contract SimpleICO is PermissionedContract {
     }
 
 
-    // withdraw fees
 
-    // set fee
+    // withdraw fees
+    function withdrawFees() external {
+        require(msg.sender == feeTo, "UpsilonX: Not allowed.");
+        uint fees = feesCollected;
+        feesCollected = 0;
+        feeTo.transfer(fees);
+    }
 
     // set feeTo
+    function setFeeTo(address _feeTo) external {
+        require(msg.sender == feeTo, "UpsilonX: Not allowed.");
+        feeTo = payable(_feeTo);
+    }
 }
