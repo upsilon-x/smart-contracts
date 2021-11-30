@@ -28,9 +28,9 @@ contract SimpleICO is PermissionedContract {
     }
 
     uint public nextOfferingId;
-    mapping(uint => SimpleOffering) offerings;
-    mapping(uint => uint) offeringPayments;
-    mapping(uint => uint) tokensSold;
+    mapping(uint => SimpleOffering) public offerings;
+    mapping(uint => uint) public offeringPayments;
+    mapping(uint => uint) public tokensSold;
 
     modifier icoExists(uint icoId) {
         require(nextOfferingId > icoId, "UpsilonX: ICO must exist.");
@@ -47,6 +47,7 @@ contract SimpleICO is PermissionedContract {
         external managerPermissioned(address(token), msg.sender) 
     {
         require(token.balanceOf(address(this)) >= tokensToSell, "UpsilonX: not enough tokens in the contract.");
+        require(icoEndTime > icoStartTime, "Cannot create ico time less than current ico.");
         address sender = msg.sender;
         offerings[nextOfferingId] = 
             SimpleOffering(icoStartTime, icoEndTime, tokenRate, tokensToSell, token, sender);
@@ -92,7 +93,7 @@ contract SimpleICO is PermissionedContract {
         icoExists(icoId) 
         managerPermissioned(address(offerings[icoId].tokenAddress), msg.sender)
     {
-        require(block.timestamp > offerings[icoId].icoEndTime, "ICO not over.");
+        //require(block.timestamp > offerings[icoId].icoEndTime, "ICO not over.");
         uint payment = offeringPayments[icoId];
         offeringPayments[icoId] = 0;
         payable(offerings[icoId].owner).transfer(payment);
@@ -101,8 +102,8 @@ contract SimpleICO is PermissionedContract {
     // check if ico is open
     function isICOOpen(uint icoId) public view returns(bool) {
         if(icoId >= nextOfferingId) return false;
-        return block.timestamp < offerings[icoId].icoEndTime && 
-            block.timestamp > offerings[icoId].icoStartTime;
+        return block.timestamp <= offerings[icoId].icoEndTime && 
+            block.timestamp >= offerings[icoId].icoStartTime;
     }
 
 

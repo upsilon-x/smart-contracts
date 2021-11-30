@@ -18,10 +18,10 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+ const HDWalletProvider = require('@truffle/hdwallet-provider');
+ 
+ const fs = require('fs');
+ const privateKey = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
   /**
@@ -34,7 +34,38 @@ module.exports = {
    * $ truffle test --network <network-name>
    */
 
+  
+
   networks: {
+    theta_testnet: {
+      provider: () => {
+ 
+        // Replace the private key below with the private key of the deployer wallet. 
+        // Make sure the deployer wallet has a sufficient amount of TFuel, e.g. 100 TFuel
+ 
+        return new HDWalletProvider({
+          privateKeys: [privateKey],
+          providerOrUrl: 'https://eth-rpc-api-testnet.thetatoken.org/rpc',
+        });
+      },
+      network_id: 365,
+      gasPrice: 4000000000000,
+    },
+
+    theta_mainnet: {
+      provider: () => {
+ 
+        // Replace the private key below with the private key of the deployer wallet. 
+        // Make sure the deployer wallet has a sufficient amount of TFuel, e.g. 100 TFuel
+ 
+        return new HDWalletProvider({
+          privateKeys: [privateKey],
+          providerOrUrl: 'https://eth-rpc-api.thetatoken.org/rpc',
+        });
+      },
+      network_id: 361,
+      gasPrice: 4000000000000,
+    }
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal
