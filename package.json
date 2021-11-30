@@ -5,7 +5,7 @@
     "fs": "^0.0.1-security"
   },
   "scripts": {
-    "console-thetatestnet": "truffle console --network theta_testnet",
-    "console-thetamainnet": "truffle console --network theta_mainnet"
+    "console-thetatest": "truffle console --network theta_testnet",
+    "console-thetamain": "truffle console --network theta_mainnet"
   }
 }
