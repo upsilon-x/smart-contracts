@@ -9,7 +9,7 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(SimpleICO, accounts[0], 300, access.address);
   const ico = await SimpleICO.deployed();
 
-  if(network === "develop") {
+  if(network === "develop" || network == "ropsten") {
     await deployer.deploy(TestERC20);
   }
 };

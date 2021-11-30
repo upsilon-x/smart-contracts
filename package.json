@@ -6,6 +6,7 @@
   },
   "scripts": {
     "console-thetatest": "truffle console --network theta_testnet",
-    "console-thetamain": "truffle console --network theta_mainnet"
+    "console-thetamain": "truffle console --network theta_mainnet",
+    "console-ropsten": "truffle console --network ropsten"
   }
 }
