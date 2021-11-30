@@ -64,7 +64,7 @@ contract SimpleICO is PermissionedContract {
 
         uint paid = msg.value;
         uint tokenOwned = offerings[icoId].tokenAddress.balanceOf(address(this));
-        uint remainingTokens = tokensSold[icoId] - offerings[icoId].tokensToSell;
+        uint remainingTokens =  offerings[icoId].tokensToSell - tokensSold[icoId];
 
         // 1:   remove tax from paid and add it to total tax
         uint tax = paid * fee;
@@ -73,7 +73,7 @@ contract SimpleICO is PermissionedContract {
         feesCollected += tax;
 
         // 2:   divide paid by token amount
-        uint tokensToBuy = paid * offerings[icoId].tokenRate / 1e23;
+        uint tokensToBuy = paid * offerings[icoId].tokenRate / 1e5;
 
         // 3:   check if there are enough remaining tokens
         require(tokensToBuy <= remainingTokens, "UpsilonX: These many tokens cannot be purchased.");
